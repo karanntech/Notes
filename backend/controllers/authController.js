@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import User from "../models/user.model.js";
+import Note from "../models/note.model.js";
 
 const register = async(req, res)=> {
     const {fullName, email, password} = req.body;
@@ -91,8 +92,39 @@ const login = async(req, res) => {
 
 }
 
+const addNote = async(req, res) => {
+    const {title, content, tags} = req.body;
+
+    const {user} = req.user;
+    if(!title || !content){
+        return res.status(400).json({error: true, message: "Please enter the details"})
+    }
+
+    try {
+        const note = new Note({
+            title,
+            content,
+            tags: tags || [],
+            userId: user._id,
+        })
+        await note.save()
+
+        return res.json({
+            error: false,
+            note,
+            message: "Note added successfully"
+        })
+    } catch (error) {
+        console.error("Error while adding note:", error);
+        return res.status(500).json({
+            error: true,
+            message: "Internal server error"
+        })
+    }
+}
 
 export {
     register,
     login,
+    addNote
 }
