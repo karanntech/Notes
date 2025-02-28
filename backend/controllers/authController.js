@@ -143,7 +143,6 @@ const editNote = async(req, res) => {
         if(title) note.title = title;
         if(content) note.content = content;
         if(tags) note.tags = tags;
-        if(isPinned) note.isPinned = isPinned;
 
         await note.save();
 
@@ -206,11 +205,41 @@ const deleteNote = async(req, res)=> {
     }
 }
 
+const pinnedNote = async(req, res) =>{
+    const noteId = req.params.noteId;
+    const {isPinned} = req.body;
+    const {user} = req.user;
+
+
+    try {
+        const note = await Note.findOne({_id: noteId, userId: user._id});
+        if(!note){
+            return res.status(404).json({error: true, message: "Note not found"})
+        }
+
+        note.isPinned = isPinned;
+
+        await note.save();
+
+        return res.json({
+            error: false,
+            note,
+            message: "Note Pinned"
+        })
+    } catch (error) {
+        return res.status(500).json({
+            error: true,
+            message: "Internal server error"
+        })
+    }
+}
+
 export {
     register,
     login,
     addNote,
     editNote,
     getNote,
-    deleteNote
+    deleteNote,
+    pinnedNote
 }
