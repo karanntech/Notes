@@ -5,9 +5,9 @@ import axiosInstance from '../utils/axiosInstance.js';
 
 const AddEditNotes = ({noteData, type, getAllNotes ,onClose}) => {
 
-    const [title, setTitle] = useState("");
-    const [content, setContent] = useState("");
-    const [tags,setTags] = useState([]);
+    const [title, setTitle] = useState(noteData?.title || "");
+    const [content, setContent] = useState(noteData?.content || "");
+    const [tags,setTags] = useState(noteData?.tags || []);
 
     const [error, setError] = useState(null);
 
@@ -30,7 +30,26 @@ const AddEditNotes = ({noteData, type, getAllNotes ,onClose}) => {
             }
         }
     }
-    const editNote = async() => {}
+    const editNote = async() => {
+        const noteId = noteData._id;
+        try {
+            const response = await axiosInstance.put("/edit-note/" + noteId, {
+                title,
+                content,
+                tags
+            });
+
+            if(response.data && response.data.note){
+                getAllNotes()
+                onClose()
+            }
+
+        } catch (error) {
+            if(error.response && error.response.data && error.response.data.message){
+                setError(error.response.data.message);
+            }
+        }
+    }
 
     const handleAddNote = () => {
         if(!title){
@@ -87,7 +106,9 @@ const AddEditNotes = ({noteData, type, getAllNotes ,onClose}) => {
         
         {error && <p className='text-xs text-red-500 pt-4'>{error}</p>}
 
-        <button className='btn-primary font-medium mt-5 p-3' onClick={handleAddNote}>ADD</button>
+        <button className='btn-primary font-medium mt-5 p-3' onClick={handleAddNote}>
+            {type === 'edit' ? "UPDATE" : 'ADD'}
+        </button>
     </div>
   )
 }
